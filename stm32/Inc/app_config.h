@@ -1,0 +1,19 @@
+#ifndef APP_CONFIG_H
+#define APP_CONFIG_H
+
+#include <stdint.h>
+
+#define APP_PHONE_NUMBER "13800138000"
+
+#define TASK_PERIOD_KEY_MS 20U
+#define TASK_PERIOD_SENSOR_MS 200U
+#define TASK_PERIOD_OLED_MS 500U
+#define TASK_PERIOD_UPLOAD_MS 1000U
+
+#define DHT_SAMPLE_DIV 10U  // 200ms * 10 = 2s
+
+#define SMOKE_OVER_COUNT_TO_ALARM 5U
+#define DEFAULT_SMOKE_THRESHOLD 600U
+
+#endif
+
