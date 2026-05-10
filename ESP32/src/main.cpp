@@ -8,7 +8,7 @@
 // -------------------------
 static const char* WIFI_SSID = "Tianxuan";
 static const char* WIFI_PASS = "12345678910";
-static const char* SERVER_BASE = "http://114.67.122.208:8000";
+static const char* SERVER_BASE = "http://42.192.113.88";
 static const char* DEVICE_ID = "HD-001";
 
 // UART pins for ESP32-C3 SuperMini.

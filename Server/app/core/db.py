@@ -243,7 +243,7 @@ class DB:
                 """
                 SELECT id, device_id, command_type, payload, status, created_at
                 FROM commands
-                WHERE device_id = ? AND status = 'PENDING'
+                WHERE device_id = ? AND status IN ('PENDING', 'SENT')
                 ORDER BY id ASC
                 LIMIT 1
                 """,
@@ -292,4 +292,3 @@ class DB:
 
 
 db = DB(settings.db_path)
-

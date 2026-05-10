@@ -1,2 +1,2 @@
 .\objects\core_cm3.o: Start\core_cm3.c
-.\objects\core_cm3.o: E:\Software\Keil\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\core_cm3.o: E:\Software\Keil\MDK5_38a\ARM\ARMCC\Bin\..\include\stdint.h

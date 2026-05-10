@@ -1,6 +1,6 @@
 .\objects\drivers_port.o: BSP\drivers_port.c
 .\objects\drivers_port.o: BSP\drivers.h
-.\objects\drivers_port.o: E:\Software\Keil\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\drivers_port.o: E:\Software\Keil\MDK5_38a\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\drivers_port.o: BSP\OLED.h
 .\objects\drivers_port.o: .\Start\stm32f10x.h
 .\objects\drivers_port.o: .\Start\core_cm3.h
@@ -30,4 +30,4 @@
 .\objects\drivers_port.o: .\Library\stm32f10x_usart.h
 .\objects\drivers_port.o: .\Library\stm32f10x_wwdg.h
 .\objects\drivers_port.o: .\Library\misc.h
-.\objects\drivers_port.o: E:\Software\Keil\MDK\ARM\ARMCC\Bin\..\include\string.h
+.\objects\drivers_port.o: E:\Software\Keil\MDK5_38a\ARM\ARMCC\Bin\..\include\string.h

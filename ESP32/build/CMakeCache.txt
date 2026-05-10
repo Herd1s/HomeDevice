@@ -346,9 +346,6 @@ Mbed TLS_SOURCE_DIR:STATIC=E:/Software/ESP_IDF/Espressif/frameworks/esp-idf-v5.3
 //No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
 
-//No help, variable specified on the command line.
-SDKCONFIG:UNINITIALIZED=e:\Workspace\Github_Space\HomeDevice\ESP32\sdkconfig
-
 //Allow unsafe builds. These builds ARE NOT SECURE.
 UNSAFE_BUILD:BOOL=OFF
 

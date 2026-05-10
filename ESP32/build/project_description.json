@@ -1,7 +1,7 @@
 {
     "version":            "1.1",
     "project_name":       "home_device_gateway",
-    "project_version":    "1",
+    "project_version":    "78525cd-dirty",
     "project_path":       "E:/Workspace/Github_Space/HomeDevice/ESP32",
     "idf_path":           "E:/Software/ESP_IDF/Espressif/frameworks/esp-idf-v5.3.1",
     "build_dir":          "E:/Workspace/Github_Space/HomeDevice/ESP32/build",

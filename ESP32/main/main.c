@@ -26,8 +26,8 @@ static const char *TAG = "gateway";
 // -------------------------
 static const char *WIFI_SSID = "Tianxuan";
 static const char *WIFI_PASS = "12345678910";
-// Use Nginx public endpoint (port 80). Uvicorn is bound to 127.0.0.1:8000 on server.
-static const char *SERVER_BASE = "http://114.67.122.208";
+// Nginx forwards port 80 to the FastAPI service on 127.0.0.1:8000.
+static const char *SERVER_BASE = "http://42.192.113.88";
 static const char *DEVICE_ID = "HD-001";
 
 // ESP32-C3 SuperMini recommended UART pins.
@@ -109,9 +109,10 @@ static uint32_t g_cmd_poll_fail = 0;
 static uint64_t g_last_upload_ms = 0;
 static uint64_t g_last_cmd_poll_ms = 0;
 static uint64_t g_last_diag_ms = 0;
-static const uint32_t UPLOAD_INTERVAL_MS = 1000;
-static const uint32_t CMD_INTERVAL_MS = 1000;
+static const uint32_t UPLOAD_INTERVAL_MS = 2000;
+static const uint32_t CMD_INTERVAL_MS = 500;
 static const uint32_t DIAG_INTERVAL_MS = 3000;
+static const int HTTP_TIMEOUT_MS = 1500;
 
 static EventGroupHandle_t g_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
@@ -221,7 +222,7 @@ static esp_err_t http_request(esp_http_client_method_t method, const char *url, 
       .url = url,
       .event_handler = http_event_handler,
       .user_data = &ctx,
-      .timeout_ms = 5000,
+      .timeout_ms = HTTP_TIMEOUT_MS,
   };
   esp_http_client_handle_t client = esp_http_client_init(&cfg);
   esp_err_t err;
@@ -404,7 +405,11 @@ static void poll_command(void) {
     payload = payload_buf;
   }
 
-  send_command_to_stm32(type_item->valuestring, payload, id_item->valueint);
+  if (send_command_to_stm32(type_item->valuestring, payload, id_item->valueint)) {
+    ESP_LOGI(TAG, "CMD sent id=%d type=%s payload=%s", id_item->valueint, type_item->valuestring, payload);
+  } else {
+    ESP_LOGW(TAG, "CMD unsupported id=%d type=%s payload=%s", id_item->valueint, type_item->valuestring, payload);
+  }
   cJSON_Delete(root);
 }
 
@@ -488,17 +493,20 @@ static void process_uart(void) {
 
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data) {
   (void)arg;
-  (void)event_data;
 
   if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
     esp_wifi_connect();
   } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+    wifi_event_sta_disconnected_t *disconnected = (wifi_event_sta_disconnected_t *)event_data;
     g_wifi_connected = false;
     xEventGroupClearBits(g_wifi_event_group, WIFI_CONNECTED_BIT);
+    ESP_LOGW(TAG, "wifi disconnected, reason=%d", disconnected != NULL ? disconnected->reason : -1);
     esp_wifi_connect();
   } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+    ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
     g_wifi_connected = true;
     xEventGroupSetBits(g_wifi_event_group, WIFI_CONNECTED_BIT);
+    ESP_LOGI(TAG, "wifi got ip: " IPSTR, IP2STR(&event->ip_info.ip));
   }
 }
 
@@ -516,13 +524,17 @@ static void wifi_init_sta(void) {
 
   strncpy((char *)wifi_cfg.sta.ssid, WIFI_SSID, sizeof(wifi_cfg.sta.ssid) - 1);
   strncpy((char *)wifi_cfg.sta.password, WIFI_PASS, sizeof(wifi_cfg.sta.password) - 1);
-  wifi_cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+  wifi_cfg.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+  wifi_cfg.sta.sort_method = WIFI_CONNECT_AP_BY_SIGNAL;
+  wifi_cfg.sta.threshold.authmode = WIFI_AUTH_WPA_PSK;
+  wifi_cfg.sta.threshold.rssi = -80;
   wifi_cfg.sta.sae_pwe_h2e = WPA3_SAE_PWE_BOTH;
   wifi_cfg.sta.pmf_cfg.capable = true;
   wifi_cfg.sta.pmf_cfg.required = false;
 
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg));
+  ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_LOGI(TAG, "wifi_init_sta finished");
 }
@@ -561,20 +573,24 @@ void app_main(void) {
     uint64_t now_ms = (uint64_t)(esp_timer_get_time() / 1000ULL);
     process_uart();
 
-    if (now_ms - g_last_upload_ms >= UPLOAD_INTERVAL_MS) {
-      g_last_upload_ms = now_ms;
-      post_upload();
-    }
     if (now_ms - g_last_cmd_poll_ms >= CMD_INTERVAL_MS) {
       g_last_cmd_poll_ms = now_ms;
       poll_command();
     }
+    if (now_ms - g_last_upload_ms >= UPLOAD_INTERVAL_MS) {
+      g_last_upload_ms = now_ms;
+      post_upload();
+    }
     if (now_ms - g_last_diag_ms >= DIAG_INTERVAL_MS) {
+      uint64_t frame_age_ms = 0;
       g_last_diag_ms = now_ms;
+      if (g_last_frame_ms != 0 && now_ms >= g_last_frame_ms) {
+        frame_age_ms = now_ms - g_last_frame_ms;
+      }
       ESP_LOGI(TAG,
                "diag wifi=%d valid=%d rx_bytes=%lu frames_ok=%lu bad=%lu last_frame_ago=%llums smoke=%u upload_ok=%lu upload_fail=%lu cmd_ok=%lu cmd_fail=%lu",
                g_wifi_connected ? 1 : 0, g_status.valid ? 1 : 0, (unsigned long)g_rx_bytes, (unsigned long)g_rx_frames_ok,
-               (unsigned long)g_rx_frames_bad, (unsigned long long)(g_last_frame_ms ? (now_ms - g_last_frame_ms) : 0), g_status.smoke,
+               (unsigned long)g_rx_frames_bad, (unsigned long long)frame_age_ms, g_status.smoke,
                (unsigned long)g_upload_ok, (unsigned long)g_upload_fail, (unsigned long)g_cmd_poll_ok, (unsigned long)g_cmd_poll_fail);
     }
 

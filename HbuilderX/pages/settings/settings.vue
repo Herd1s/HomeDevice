@@ -3,7 +3,7 @@
     <view class="card">
       <view class="title">系统设置</view>
       <view class="row"><text>服务器地址</text></view>
-      <input v-model="baseUrl" placeholder="http://114.67.122.208:8000" />
+      <input v-model="baseUrl" placeholder="http://42.192.113.88" />
       <view class="row"><text>设备ID</text></view>
       <input v-model="deviceId" placeholder="HD-001" />
       <button class="btn" type="primary" @click="save">保存</button>
@@ -48,4 +48,3 @@ export default {
   }
 };
 </script>
-

@@ -14,6 +14,93 @@ static uint8_t s_uart1_rx_buf[128];
 static volatile uint16_t s_uart1_rx_head = 0U;
 static volatile uint16_t s_uart1_rx_tail = 0U;
 
+#define DHT11_PORT GPIOA
+#define DHT11_PIN GPIO_Pin_8
+
+#define DWT_CTRL_REG (*(volatile uint32_t*)0xE0001000UL)
+#define DWT_CYCCNT_REG (*(volatile uint32_t*)0xE0001004UL)
+#define DWT_CTRL_CYCCNTENA_Msk (1UL << 0)
+
+static void dht11_cycle_counter_init(void) {
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+  DWT_CYCCNT_REG = 0U;
+  DWT_CTRL_REG |= DWT_CTRL_CYCCNTENA_Msk;
+}
+
+static uint32_t dht11_cycles_per_us(void) {
+  uint32_t cycles = SystemCoreClock / 1000000U;
+  return cycles ? cycles : 1U;
+}
+
+static void dht11_delay_us(uint32_t us) {
+  uint32_t start;
+  uint32_t cycles;
+
+  cycles = dht11_cycles_per_us() * us;
+  start = DWT_CYCCNT_REG;
+  while ((uint32_t)(DWT_CYCCNT_REG - start) < cycles) {
+  }
+}
+
+static void dht11_pin_output(void) {
+  GPIO_InitTypeDef gpio;
+
+  gpio.GPIO_Mode = GPIO_Mode_Out_OD;
+  gpio.GPIO_Speed = GPIO_Speed_50MHz;
+  gpio.GPIO_Pin = DHT11_PIN;
+  GPIO_Init(DHT11_PORT, &gpio);
+}
+
+static void dht11_pin_input(void) {
+  GPIO_InitTypeDef gpio;
+
+  gpio.GPIO_Mode = GPIO_Mode_IPU;
+  gpio.GPIO_Speed = GPIO_Speed_50MHz;
+  gpio.GPIO_Pin = DHT11_PIN;
+  GPIO_Init(DHT11_PORT, &gpio);
+}
+
+static uint8_t dht11_read_pin(void) {
+  return GPIO_ReadInputDataBit(DHT11_PORT, DHT11_PIN) ? 1U : 0U;
+}
+
+static uint8_t dht11_wait_until(uint8_t level, uint32_t timeout_us) {
+  uint32_t start;
+  uint32_t timeout_cycles;
+
+  start = DWT_CYCCNT_REG;
+  timeout_cycles = dht11_cycles_per_us() * timeout_us;
+  while (dht11_read_pin() != level) {
+    if ((uint32_t)(DWT_CYCCNT_REG - start) >= timeout_cycles) {
+      return 0U;
+    }
+  }
+  return 1U;
+}
+
+static uint8_t dht11_wait_while(uint8_t level, uint32_t timeout_us, uint32_t* elapsed_us) {
+  uint32_t start;
+  uint32_t elapsed_cycles;
+  uint32_t cycles_per_us;
+  uint32_t timeout_cycles;
+
+  cycles_per_us = dht11_cycles_per_us();
+  start = DWT_CYCCNT_REG;
+  timeout_cycles = cycles_per_us * timeout_us;
+  while (dht11_read_pin() == level) {
+    elapsed_cycles = (uint32_t)(DWT_CYCCNT_REG - start);
+    if (elapsed_cycles >= timeout_cycles) {
+      return 0U;
+    }
+  }
+
+  if (elapsed_us != 0) {
+    elapsed_cycles = (uint32_t)(DWT_CYCCNT_REG - start);
+    *elapsed_us = elapsed_cycles / cycles_per_us;
+  }
+  return 1U;
+}
+
 static void gpio_init(void) {
   GPIO_InitTypeDef gpio;
 
@@ -131,6 +218,7 @@ void Drivers_Init(void) {
   usart1_init();
   usart2_init();
   OLED_Init();
+  dht11_cycle_counter_init();
   SysTick_Config(SystemCoreClock / 1000U);
 }
 
@@ -175,11 +263,68 @@ void Drivers_Uart1_Send(const uint8_t* data, uint16_t len) { uart_send_bytes(USA
 void Drivers_Uart2_Send(const uint8_t* data, uint16_t len) { uart_send_bytes(USART2, data, len); }
 
 uint8_t Drivers_ReadDht11(int8_t* out_temp, uint8_t* out_humi) {
-  // TODO: replace with real DHT11 timing implementation on PA8.
-  *out_temp = 25;
-  *out_humi = 50;
-  return 1;
-}
+  uint8_t data[5] = {0U, 0U, 0U, 0U, 0U};
+  uint8_t i;
+  uint32_t high_us;
+  uint32_t primask;
+  uint8_t ok = 0U;
+
+  if (out_temp == 0 || out_humi == 0) {
+    return 0U;
+  }
+
+  dht11_cycle_counter_init();
+
+  dht11_pin_output();
+  GPIO_ResetBits(DHT11_PORT, DHT11_PIN);
+  dht11_delay_us(20000U);
+
+  primask = __get_PRIMASK();
+  __disable_irq();
+
+  GPIO_SetBits(DHT11_PORT, DHT11_PIN);
+  dht11_delay_us(30U);
+  dht11_pin_input();
+
+  if (!dht11_wait_until(0U, 100U)) {
+    goto done;
+  }
+  if (!dht11_wait_until(1U, 100U)) {
+    goto done;
+  }
+  if (!dht11_wait_until(0U, 100U)) {
+    goto done;
+  }
+
+  for (i = 0U; i < 40U; ++i) {
+    if (!dht11_wait_until(1U, 80U)) {
+      goto done;
+    }
+    if (!dht11_wait_while(1U, 100U, &high_us)) {
+      goto done;
+    }
+
+    data[i / 8U] <<= 1;
+    if (high_us > 45U) {
+      data[i / 8U] |= 1U;
+    }
+  }
+
+  if (data[4] != (uint8_t)(data[0] + data[1] + data[2] + data[3])) {
+    goto done;
+  }
+  if (data[0] > 100U) {
+    goto done;
+  }
+
+  *out_humi = data[0];
+  *out_temp = (int8_t)data[2];
+  ok = 1U;
+
+done:
+  dht11_pin_input();
+  __set_PRIMASK(primask);
+  return o}
 
 uint16_t Drivers_ReadMq2Adc(void) {
   uint32_t timeout = 100000;

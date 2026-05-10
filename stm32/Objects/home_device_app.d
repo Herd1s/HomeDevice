@@ -3,7 +3,7 @@
 .\objects\home_device_app.o: BSP\air780e_sms.h
 .\objects\home_device_app.o: BSP\alarm_logic.h
 .\objects\home_device_app.o: BSP\app_types.h
-.\objects\home_device_app.o: E:\Software\Keil\MDK\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\home_device_app.o: E:\Software\Keil\MDK5_38a\ARM\ARMCC\Bin\..\include\stdint.h
 .\objects\home_device_app.o: BSP\app_config.h
 .\objects\home_device_app.o: BSP\comm_uart.h
 .\objects\home_device_app.o: BSP\protocol.h
@@ -12,4 +12,4 @@
 .\objects\home_device_app.o: BSP\oled_ui.h
 .\objects\home_device_app.o: BSP\scheduler.h
 .\objects\home_device_app.o: BSP\sensor.h
-.\objects\home_device_app.o: E:\Software\Keil\MDK\ARM\ARMCC\Bin\..\include\string.h
+.\objects\home_device_app.o: E:\Software\Keil\MDK5_38a\ARM\ARMCC\Bin\..\include\string.h
