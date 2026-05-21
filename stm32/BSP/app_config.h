@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define APP_PHONE_NUMBER "15189005620"
+#define APP_PHONE_NUMBER "13626191676"
 
 #define TASK_PERIOD_KEY_MS 20U
 #define TASK_PERIOD_SENSOR_MS 200U

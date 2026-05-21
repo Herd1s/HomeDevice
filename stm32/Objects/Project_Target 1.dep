@@ -822,7 +822,7 @@ I (BSP\air780e_sms.h)(0x69E9CF35)
 I (BSP\alarm_logic.h)(0x69E9CF07)
 I (BSP\app_types.h)(0x69E9CED0)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
-I (BSP\app_config.h)(0x69EAC8D8)
+I (BSP\app_config.h)(0x6A0057DA)
 I (BSP\comm_uart.h)(0x69E9CF2E)
 I (BSP\protocol.h)(0x69E9CEDF)
 I (BSP\drivers.h)(0x69E9D649)
@@ -837,7 +837,7 @@ I (BSP\protocol.h)(0x69E9CEDF)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
 F (.\BSP\protocol.h)(0x69E9CEDF)()
 F (.\BSP\scheduler.c)(0x69E9CF5A)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\BSP-IE:\Software\Keil\MDK\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-D__UVISION_VERSION="538" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\scheduler.o --omf_browse .\objects\scheduler.crf --depend .\objects\scheduler.d)
-I (BSP\app_config.h)(0x69EAC8D8)
+I (BSP\app_config.h)(0x6A0057DA)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
 I (BSP\scheduler.h)(0x69E9CEFD)
 F (.\BSP\scheduler.h)(0x69E9CEFD)()
@@ -845,7 +845,7 @@ F (.\BSP\alarm_logic.c)(0x69E9CF69)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=inter
 I (BSP\alarm_logic.h)(0x69E9CF07)
 I (BSP\app_types.h)(0x69E9CED0)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
-I (BSP\app_config.h)(0x69EAC8D8)
+I (BSP\app_config.h)(0x6A0057DA)
 F (.\BSP\alarm_logic.h)(0x69E9CF07)()
 F (.\BSP\sensor.c)(0x69E9CF72)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\BSP-IE:\Software\Keil\MDK\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-D__UVISION_VERSION="538" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\sensor.o --omf_browse .\objects\sensor.crf --depend .\objects\sensor.d)
 I (BSP\sensor.h)(0x69E9CF11)
@@ -880,7 +880,7 @@ I (BSP\comm_uart.h)(0x69E9CF2E)
 I (BSP\protocol.h)(0x69E9CEDF)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
 F (.\BSP\air780e_sms.h)(0x69E9CF35)()
-F (.\BSP\drivers_port.c)(0x69F5D938)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\BSP-IE:\Software\Keil\MDK\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-D__UVISION_VERSION="538" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\drivers_port.o --omf_browse .\objects\drivers_port.crf --depend .\objects\drivers_port.d)
+F (.\BSP\drivers_port.c)(0x6A0057E7)(--c99 -c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I .\Start -I .\User -I .\Library -I .\BSP-IE:\Software\Keil\MDK\ARM\PACK\Keil\STM32F1xx_DFP\2.2.0\Device\Include-D__UVISION_VERSION="538" -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o .\objects\drivers_port.o --omf_browse .\objects\drivers_port.crf --depend .\objects\drivers_port.d)
 I (BSP\drivers.h)(0x69E9D649)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\stdint.h)(0x5E8E3CC2)
 I (BSP\OLED.h)(0x69E9D697)
@@ -913,5 +913,5 @@ I (.\Library\stm32f10x_wwdg.h)(0x4D783BB4)
 I (.\Library\misc.h)(0x4D783BB4)
 I (E:\Software\Keil\MDK5_38a\ARM\ARMCC\include\string.h)(0x5E8E3CC2)
 F (.\BSP\drivers.h)(0x69E9D649)()
-F (.\BSP\app_config.h)(0x69EAC8D8)()
+F (.\BSP\app_config.h)(0x6A0057DA)()
 F (.\BSP\app_types.h)(0x69E9CED0)()

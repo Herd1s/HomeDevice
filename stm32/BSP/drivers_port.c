@@ -324,7 +324,8 @@ uint8_t Drivers_ReadDht11(int8_t* out_temp, uint8_t* out_humi) {
 done:
   dht11_pin_input();
   __set_PRIMASK(primask);
-  return o}
+  return ok;
+}
 
 uint16_t Drivers_ReadMq2Adc(void) {
   uint32_t timeout = 100000;
